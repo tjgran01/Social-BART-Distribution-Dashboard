@@ -223,7 +223,8 @@ def update_par_figure(ids, opp):
     else:
         samples = df[df["id"] == id]
 
-    fig = px.line(samples, x="balloon_number", y="pump_event_pumps", color="id")
+    samples = samples[samples["pump_event_pumps"] != 0]
+    fig = px.line(samples, x="balloon_number", y="pump_event_pumps", color="id", markers=True)
     fig.update_layout(transition_duration=500)
     return fig
 
@@ -243,7 +244,7 @@ def update_par_figure_1(ids, opp):
     else:
         samples = df[df["id"] == id]
 
-    fig = px.line(samples, x="balloon_number", y="total_pumps_for_balloon", color="id")
+    fig = px.line(samples, x="balloon_number", y="total_pumps_for_balloon", color="id", markers=True)
     fig.update_layout(transition_duration=500)
     return fig
 
