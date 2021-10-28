@@ -104,7 +104,40 @@ app.layout = dbc.Container(children=[
                                         ),
                             dcc.Graph(id="reg-graph")
         ]
-    )])
+    )]),
+
+    dbc.Row([
+        html.H2(children="Individual Participant Exploration"),
+        html.Label("Select Participant To Look Over: "),
+
+        dcc.Dropdown(
+                     id="par-select",
+                     options=[{"label": elm, "value": elm} for elm in df["id"].unique()],
+                     multi=False,
+                     value=1,
+                     style={"width": "70%"}
+                    ),
+
+        html.Label("Select Opponent: "),
+
+        dcc.Dropdown(
+                     id="opponent-select",
+                     style={"width": "70%"}
+                    ),
+
+        dbc.Col([
+            html.Div(children=[
+                dcc.Graph(id="par-line-pep"),
+
+        ])
+        ], width=6),
+
+        dbc.Col([
+            html.Div(children=[
+                dcc.Graph(id="par-line-delay"),
+        ])
+        ], width=6),
+    ]),
 ])
 
 #### Main Function (Essentially) #####
@@ -174,6 +207,56 @@ def update_figure(x_var, y_var, grouping):
     fig.update_layout(transition_duration=500)
     return fig
 
+@app.callback(
+    Output('par-line-pep', 'figure'),
+    Input('par-select', 'value'),
+    Input('opponent-select', 'value')
+    )
+
+def update_par_figure(ids, opp):
+
+    if opp:
+        ids = [ids, opp]
+
+    if isinstance(ids, list):
+        samples = df[df["id"].isin(ids)]
+    else:
+        samples = df[df["id"] == id]
+
+    fig = px.line(samples, x="balloon_number", y="pump_event_pumps", color="id")
+    fig.update_layout(transition_duration=500)
+    return fig
+
+@app.callback(
+    Output('par-line-delay', 'figure'),
+    Input('par-select', 'value'),
+    Input('opponent-select', 'value')
+    )
+
+def update_par_figure_1(ids, opp):
+
+    if opp:
+        ids = [ids, opp]
+
+    if isinstance(ids, list):
+        samples = df[df["id"].isin(ids)]
+    else:
+        samples = df[df["id"] == id]
+
+    fig = px.line(samples, x="balloon_number", y="total_pumps_for_balloon", color="id")
+    fig.update_layout(transition_duration=500)
+    return fig
+
+@app.callback(
+    Output('opponent-select', 'options'),
+    Input('par-select', 'value')
+)
+
+def show_opponents(id):
+
+    samples = df[df["id"] == id]
+    return [{"label": elm, "value": elm} for elm in samples["game_opponent"].unique()]
+
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
