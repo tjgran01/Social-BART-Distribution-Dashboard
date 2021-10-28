@@ -72,7 +72,7 @@ app.layout = dbc.Container(children=[
                             dcc.RangeSlider(
                                        id='max-slider',
                                       ),
-                            #dcc.Graph(id="dist-graph")
+                            dcc.Graph(id="dist-graph")
         ]
     )]),
 
@@ -102,7 +102,7 @@ app.layout = dbc.Container(children=[
                                          value="No Grouping",
                                          style={"width": "70%"}
                                         ),
-                            #dcc.Graph(id="reg-graph")
+                            dcc.Graph(id="reg-graph")
         ]
     )])
 ])
@@ -127,54 +127,52 @@ def update_max_slider(x_var):
 
 #### Callabcks #### GRAPHS
 
-# @app.callback(
-#     Output('dist-graph', 'figure'),
-#     Input('var-select-x', 'value'),
-#     Input('max-slider', 'value'),
-#     Input('var-select-grouping', 'value'),
-#     )
-#
-# def update_figure(x_var, clamps, grouping):
-#
-#     if x_var in balloon_wise_features:
-#         samples = df[df["onset_from_balloon_start"] == 0]
-#     else:
-#         samples = df
-#         if x_var == "onset_from_balloon_start":
-#             samples = df[df["onset_from_balloon_start"] != 0]
-#
-#     samples = samples[samples[x_var] <= clamps[1]]
-#     samples = samples[samples[x_var] >= clamps[0]]
-#
-#     if grouping != "No Grouping":
-#         fig = px.histogram(samples, x=x_var, color=grouping, marginal="rug")
-#     else:
-#         fig = px.histogram(samples, x=x_var, marginal="rug")
-#
-#     fig.update_layout(transition_duration=500)
-#
-#     return fig
-#
-# @app.callback(
-#     Output('reg-graph', 'figure'),
-#     Input('var-select-x-reg', 'value'),
-#     Input('var-select-y-reg', 'value'),
-#     Input('grouping-reg', 'value')
-#     )
-#
-# def update_figure(x_var, y_var, grouping):
-#
-#     samples = df
-#
-#     if grouping != "No Grouping":
-#         fig = px.scatter(samples, x=x_var, y=y_var, color=grouping, trendline='ols')
-#     else:
-#         fig = px.scatter(samples, x=x_var, y=y_var, trendline='ols')
-#
-#     fig.update_layout(transition_duration=500)
-#     return fig
+@app.callback(
+    Output('dist-graph', 'figure'),
+    Input('var-select-x', 'value'),
+    Input('max-slider', 'value'),
+    Input('var-select-grouping', 'value'),
+    )
 
-# Hello
+def update_figure(x_var, clamps, grouping):
+
+    if x_var in balloon_wise_features:
+        samples = df[df["onset_from_balloon_start"] == 0]
+    else:
+        samples = df
+        if x_var == "onset_from_balloon_start":
+            samples = df[df["onset_from_balloon_start"] != 0]
+
+    samples = samples[samples[x_var] <= clamps[1]]
+    samples = samples[samples[x_var] >= clamps[0]]
+
+    if grouping != "No Grouping":
+        fig = px.histogram(samples, x=x_var, color=grouping, marginal="rug")
+    else:
+        fig = px.histogram(samples, x=x_var, marginal="rug")
+
+    fig.update_layout(transition_duration=500)
+
+    return fig
+
+@app.callback(
+    Output('reg-graph', 'figure'),
+    Input('var-select-x-reg', 'value'),
+    Input('var-select-y-reg', 'value'),
+    Input('grouping-reg', 'value')
+    )
+
+def update_figure(x_var, y_var, grouping):
+
+    samples = df
+
+    if grouping != "No Grouping":
+        fig = px.scatter(samples, x=x_var, y=y_var, color=grouping, trendline='ols')
+    else:
+        fig = px.scatter(samples, x=x_var, y=y_var, trendline='ols')
+
+    fig.update_layout(transition_duration=500)
+    return fig
 
 
 if __name__ == '__main__':
