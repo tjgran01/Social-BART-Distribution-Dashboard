@@ -28,7 +28,9 @@ pump_event_features = ["pump_event_duration", "onset_from_balloon_start", "pump_
 
 grouping_features = ["game_condition", "balloon_outcome", "game_opponent", "No Grouping"]
 
-df = pd.read_csv("./test/sbart_balloon_features.csv")
+df = pd.read_csv("./test/sbart_balloon_features_reduced.csv")
+df.drop(["onset_from_balloon_start", "start_pump", "end_pump", "pump_event_pumps"], axis=1, inplace=True)
+
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
@@ -122,7 +124,8 @@ app.layout = dbc.Container(children=[
 
         dcc.Dropdown(
                      id="opponent-select",
-                     style={"width": "70%"}
+                     style={"width": "70%"},
+                     value=1
                     ),
 
         dbc.Col([
@@ -169,12 +172,14 @@ def update_max_slider(x_var):
 
 def update_figure(x_var, clamps, grouping):
 
-    if x_var in balloon_wise_features:
-        samples = df[df["onset_from_balloon_start"] == 0]
-    else:
-        samples = df
-        if x_var == "onset_from_balloon_start":
-            samples = df[df["onset_from_balloon_start"] != 0]
+    # if x_var in balloon_wise_features:
+    #     samples = df[df["onset_from_balloon_start"] == 0]
+    # else:
+    #     samples = df
+    #     if x_var == "onset_from_balloon_start":
+    #         samples = df[df["onset_from_balloon_start"] != 0]
+
+    samples = df
 
     samples = samples[samples[x_var] <= clamps[1]]
     samples = samples[samples[x_var] >= clamps[0]]
@@ -221,10 +226,9 @@ def update_par_figure(ids, opp):
     if isinstance(ids, list):
         samples = df[df["id"].isin(ids)]
     else:
-        samples = df[df["id"] == id]
+        samples = df[df["id"] == ids]
 
-    samples = samples[samples["pump_event_pumps"] != 0]
-    fig = px.line(samples, x="balloon_number", y="pump_event_pumps", color="id", markers=True)
+    fig = px.line(samples, x="balloon_number", y="avg_pumps_per_pump_event", color="id", markers=True)
     fig.update_layout(transition_duration=500)
     return fig
 
