@@ -62,6 +62,7 @@ pump_event_table_df = pd.DataFrame(
     }
     )
 pump_event_table = dbc.Table.from_dataframe(pump_event_table_df , striped=True, bordered=True, hover=True)
+
 balloon_event_info = dcc.Markdown('''
     ##### Balloon Features:
 
@@ -88,6 +89,36 @@ balloon_table_df = pd.DataFrame(
     }
     )
 balloon_table = dbc.Table.from_dataframe(balloon_table_df , striped=True, bordered=True, hover=True)
+
+participant_level_info = dcc.Markdown('''
+    ##### Participant Level Features:
+
+    These are features that are at the participant level. Mostly they are surveys, or belief stances about
+    the state of the balloon of the player prior to to or while playing the game.
+
+    The table to the right should describe these features.
+''')
+participant_level_df = pd.DataFrame(
+    {
+        "Feature": ["Alone",
+                    "BeliefBalloon",
+                    "MaxBalloonSize",
+                    "firstcash",
+                    "popsbeforefirstbash"],
+        "Description": ["Mean Cash in point during BERP alone trials.",
+                        "Mean Belief Regarding Balloon Pops",
+                        "Max Balloon Size (I assume this means throughout the whole experiment)",
+                        "First Cash in Point of BERP Alone Trials",
+                        "How Many Times they Popped the Balloon Prior to Cashing it."],
+        "Units": ["Pumps",
+                  "Pumps",
+                  "Pumps",
+                  "Pumps",
+                  "Pops"]
+    }
+    )
+participant_level_table = dbc.Table.from_dataframe(balloon_table_df , striped=True, bordered=True, hover=True)
+
 grouping_event_info = dcc.Markdown('''
        ##### Grouping Features
        There are some other features of the balloon that would not make much sense to plot (as they are categorical). Here they are.
@@ -96,13 +127,16 @@ grouping_event_table_df = pd.DataFrame(
     {
         "Feature": ["game_condition",
                     "balloon_outcome",
-                    "game_opponent"],
+                    "game_opponent",
+                    "MRI"],
         "Description": ["What type of game this was. Aka, who they player was up against",
                         "... the outcome of the balloon (I did a got variable name there)",
-                        "The ID to the opponent player (or 0, 1 for solo / computer opponent)"],
+                        "The ID to the opponent player (or 0, 1 for solo / computer opponent)",
+                        "Whether or not that participant was in an MRI scanner while playing."],
         "Values": ["Solo, Computer Opponent, Human Opponent",
                    "Popped, Cashed",
-                   "a unique ID"]
+                   "a unique ID",
+                   "Binary (0=No MRI)"]
     }
     )
 grouping_event_table = dbc.Table.from_dataframe(grouping_event_table_df , striped=True, bordered=True, hover=True)
@@ -113,7 +147,7 @@ background = dbc.Row(
 
 pump_event = dbc.Row(
     [dbc.Col(pump_event_info, width=6),
-    dbc.Col(pump_event_table, width=6),]
+    dbc.Col(pump_event_table, width=6),],
 )
 
 balloon_event = dbc.Row(
@@ -121,10 +155,24 @@ balloon_event = dbc.Row(
     dbc.Col(balloon_table, width=6),]
 )
 
+participant_level_variables = dbc.Row(
+    [dbc.Col(participant_level_info, width=6),
+    dbc.Col(participant_level_table, width=6),]
+)
+
 grouping_event = dbc.Row(
     [dbc.Col(grouping_event_info, width=6),
     dbc.Col(grouping_event_table, width=6),]
 )
+
+
+set_data_to_pump_behavior_button = dbc.Button(
+    "Switch Dataset",
+    color="danger",
+    n_clicks=0,
+    id="switch-dataset-button"
+)
+
 
 accordion = html.Div(
     dbc.Accordion(
@@ -137,7 +185,12 @@ accordion = html.Div(
             ),
             dbc.AccordionItem(
                 [
-                    pump_event
+                    dbc.Alert("""Due to the size of the data these variables are not set active on load.
+                              To load this data. Push the scary red button at the bottom of this section.
+                              Be warned. Load times will increase. This is because the dataset is going from
+                              ~16000 rows of data to ~160000 rows of data.""", color="danger", id="dataset-state"),
+                    pump_event,
+                    set_data_to_pump_behavior_button
                 ],
                 title="Pump Event Background Information",
             ),
@@ -146,6 +199,12 @@ accordion = html.Div(
                     balloon_event
                 ],
                 title="Balloon Event Background Information"
+            ),
+            dbc.AccordionItem(
+                [
+                    participant_level_variables
+                ],
+                title="Participant Variables Background Information"
             ),
             dbc.AccordionItem(
                 [

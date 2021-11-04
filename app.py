@@ -29,7 +29,15 @@ pump_event_features = ["pump_event_duration", "onset_from_balloon_start", "pump_
 grouping_features = ["game_condition", "balloon_outcome", "game_opponent", "No Grouping"]
 
 df = pd.read_csv("./test/sbart_balloon_features_reduced.csv")
-df.drop(["onset_from_balloon_start", "start_pump", "end_pump", "pump_event_pumps"], axis=1, inplace=True)
+df.drop(["onset_from_balloon_start", "start_pump", "end_pump", "pump_event_pumps", "Unnamed: 0"], axis=1, inplace=True)
+
+sample_table = pd.DataFrame({
+    "Mean": [1],
+    "Skew": [1],
+    "Kurtosis": [1],
+    "N": [1],
+    "Std. Dev": [1],
+})
 
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -74,7 +82,11 @@ app.layout = dbc.Container(children=[
                             dcc.RangeSlider(
                                        id='max-slider',
                                       ),
-                            dcc.Graph(id="dist-graph")
+                            dcc.Graph(id="dist-graph"),
+                            html.Div(children=[
+
+                            ],
+                            id="dist-table-1"),
         ]
     )]),
 
@@ -144,6 +156,22 @@ app.layout = dbc.Container(children=[
 ])
 
 #### Main Function (Essentially) #####
+# Button Callback
+@app.callback(
+    Output('dataset-state', 'color'),
+    [Input('switch-dataset-button', 'n_clicks')]
+)
+
+def switch_dataset(clicks):
+
+    if clicks == 0 or clicks % 2 == 0:
+        df = pd.read_csv("./test/sbart_balloon_features_reduced.csv")
+        return "danger"
+    else:
+        df = pd.read_csv("./test/sbart_balloon_features.csv")
+        return "success"
+
+
 @app.callback(
     Output('max-slider', 'min'),
     Output('max-slider', 'max'),
@@ -192,6 +220,33 @@ def update_figure(x_var, clamps, grouping):
     fig.update_layout(transition_duration=500)
 
     return fig
+
+@app.callback(
+    Output('dist-table-1', 'children'),
+    Input('var-select-x', 'value'),
+    Input('max-slider', 'value'),
+    Input('var-select-grouping', 'value'),
+)
+
+def update_table(x_var, clamps, grouping):
+
+    samples = df
+
+    samples = samples[samples[x_var] <= clamps[1]]
+    samples = samples[samples[x_var] >= clamps[0]]
+
+    sample_table = pd.DataFrame({
+        "Mean": [samples[x_var].mean()],
+        "Skew": [samples[x_var].skew()],
+        "Kurtosis": [samples[x_var].kurtosis()],
+        "N": [samples[x_var].count()],
+        "Std. Dev": [samples[x_var].std()],
+        "Min": [samples[x_var].min()],
+        "Max": [samples[x_var].max()]
+    })
+
+    return dbc.Table.from_dataframe(sample_table, striped=True, bordered=True, hover=True)
+
 
 @app.callback(
     Output('reg-graph', 'figure'),
